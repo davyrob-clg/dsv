@@ -78,20 +78,17 @@
             <div class="relative my-4 w-[659px] h-[233px]">
               <!-- buttons -->
               <div class="absolute top-[132px] left-[5px]">
-                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button"
-                  onclick="generateMessageSignal()">
-                  Generate Message
+                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button" id="generate" >Generate Binary</button>                  
+                  
                 </button>
               </div>
               <div class="absolute top-[234px] left-[220px]">
-                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button"
-                  onclick="generateCarrierSignal()">
+                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button" id="generateCarrier" >
                   Generate Carrier
                 </button>
               </div>
               <div class="absolute top-[112px] right-[55px]">
-                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button" onclick="simulateASK()">
-                  Simulate ASK
+                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button" id="simulateask" value="Simulate ASK">Generate ASK
                 </button>
               </div>
               <div class="absolute top-[300px] left-[177px]">
@@ -142,8 +139,7 @@
               <div class="relative my-4 w-[659px] h-[233px]">
                 <!-- buttons -->
                 <div class="absolute top-[124px] right-[90px]">
-                  <button class="bg-blue-500 text-white rounded-md px-2 py-1" onclick="demodulateASK()">Demodulate
-                    ASK</button>
+                  <button class="bg-blue-500 text-white rounded-md px-2 py-1" id="demodulateASK" >Demodulate ASK</button>
 
                 </div>
                 <img src="./images/simulation/askimg2.png" alt="ask1" class="w-[100%] h-[100%]" />
@@ -161,7 +157,7 @@
     </div>
   </div>
 
-   <script type="text/javascript" src="js/ask.js"></script>
+   <script type="module" src="/src/js/ask.js"></script>
  
 </body>
 

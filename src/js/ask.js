@@ -3,6 +3,39 @@
 // Attach event listeners when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', attachEventListeners);
 
+// Event listner for generate  button
+document.getElementById('generate').onclick = () => {
+
+  console.log("Generate")
+  generateMessageSignal();
+
+};
+
+// Event listner for generate  button
+document.getElementById('generateCarrier').onclick = () => {
+
+  console.log("Generate Carrier")
+  generateCarrierSignal();
+
+};
+
+// Event listner for generate  button
+document.getElementById('simulateask').onclick = () => {
+
+  console.log("Simulate ASK")
+  simulateASK();
+
+};
+
+// Event listner for generate  button
+document.getElementById('demodulateASK').onclick = () => {
+
+  console.log("Demodulate ASK")
+  demodulateASK();
+
+};
+
+
 
 
 
