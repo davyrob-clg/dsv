@@ -19,7 +19,7 @@
      <div class="logo-container">   
      <img src="/logo.png" alt="Logo" class="logo">
       </div>
-  <h4 id='title'>Gibraltar University Digital Encoding Visualizer
+  <h4 id='apptitle'>Gibraltar University Digital Encoding Visualizer
     </h6>
     <div class="container">
       <select id="options">
@@ -33,14 +33,18 @@
         <option value="MAN">Manchester</option>
         <option value="B8ZS">B8ZS</option>
         <option value="HDB3">HDB3</option>
-        <option value="4B5B">4B5B Encoding</option>
+        <option value="4B5B">4B5B Encoding ( With NRZ-I )</option>
       </select><br>
     </div>
     <div class="container">
        <!-- <input type="text" id="binary" placeholder="Enter Binary Value"><br><br>  -->
-      <input type="text" id="binary" placeholder="Enter binary e.g. 101010" inputmode="numeric"> 
+      <input type="text" id="textascii" placeholder="Enter Ascii" inputmode="character"> 
 
-      <input class="btn-submit" id="button" type="submit" value="Submit"><br><br>
+       <input type="text" id="binary" placeholder="Enter binary e.g. 101010" inputmode="numeric"> 
+
+      
+      <input class="btn-submit" id="button" type="submit" value="Encode"><br><br>
+      <input class="btn-submit" id="buttonAsk" type="submit" value="Modulate">
       <textarea id="explain-message" class="text-area" placeholder=""></textarea>
 
 

@@ -1,0 +1,201 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Virtual Labs</title>
+  </head>
+  <body>
+    <!-- sidebar and body -->
+    <div class="flex min-h-[80vh]">
+      <div class="px-6 pb-6 mt-1 flex-1">
+        <div class="flex flex-col">
+          <div class="flex max-lg:flex-col gap-x-12 gap-y-2 mt-4">
+            <div class="flex items-center gap-1">
+              <label for="numBits">Number of Random Bits:</label>
+              <input
+                class="border border-black px-2 py-1 rounded-sm"
+                type="number"
+                id="numBits"
+                value="100"
+              />
+            </div>
+            <div class="flex items-center gap-1">
+              <label for="snr">Signal-to-Noise Ratio (SNR) in dB:</label>
+              <input
+                class="border border-black px-2 py-1 rounded-sm"
+                type="number"
+                id="snr"
+                value="10"
+              />
+            </div>
+            <div class="flex">
+              <button
+                class="hidden bg-blue-500 text-white rounded-md px-2 py-1"
+                class="button"
+                onclick="generateSignal()"
+              >
+                Generate Constellation Diagrams
+              </button>
+            </div>
+          </div>
+          <div class="flex justify-center mt-2">
+            <canvas
+              id="originalSignalCanvas"
+              width="600px"
+              height="450px"
+            ></canvas>
+            <canvas id="signalCanvas" width="600px" height="450px"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      let signalChart;
+      let originalSignalChart;
+
+      function generateSignal() {
+        const numBits = parseInt(document.getElementById("numBits").value);
+        const SNR_dB = parseFloat(document.getElementById("snr").value);
+
+        // Clear existing charts
+        if (signalChart) {
+          signalChart.destroy();
+        }
+        if (originalSignalChart) {
+          originalSignalChart.destroy();
+        }
+
+        // Generate random 1 or -1
+        function randomOneMinusOne() {
+          return Math.random() < 0.5 ? -1 : 1;
+        }
+
+        // Generate a random modulated signal
+        const modulatedSignal = new Array(numBits)
+          .fill()
+          .map(randomOneMinusOne);
+
+        console.log("Random Modulated Signal:", modulatedSignal);
+
+        // Additive White Gaussian Noise (AWGN) parameters
+        const SNR_linear = 10 ** (SNR_dB / 10); // Convert SNR from dB to linear scale
+        const sigma = Math.sqrt(1 / (2 * SNR_linear)); // Standard deviation of noise
+
+        // Generate AWGN using Box-Muller method
+        const noise_I = modulatedSignal.map(() => sigma * standardNormal()); // In-phase component of noise
+        const noise_Q = modulatedSignal.map(() => sigma * standardNormal()); // Quadrature component of noise
+
+        // Add noise to the modulated signal
+        const noisyModulatedSignal = modulatedSignal.map(
+          (value, index) => value + noise_Q[index]
+        );
+        console.log("Noisy Modulated Signal:", noisyModulatedSignal);
+
+        // Plot Noisy Modulated Signal
+        const canvas = document.getElementById("signalCanvas");
+        const ctx = canvas.getContext("2d");
+
+        signalChart = new Chart(ctx, {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "Noisy Modulated Signal (ASK)",
+                data: noisyModulatedSignal.map((value, index) => ({
+                  x: value,
+                  y: 0,
+                })),
+                borderColor: "red",
+                borderWidth: 1,
+                pointBackgroundColor: "red",
+                pointBorderColor: "red",
+                pointRadius: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: false, // Prevents automatic resizing
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Real (Q)",
+                },
+              },
+              y: {
+                display: true,
+				text: "Imaginary (I)",
+              },
+            },
+          },
+        });
+
+        // Plot Constellation Diagram of Original Modulated Signal (without noise)
+        const originalSignalCanvas = document.getElementById(
+          "originalSignalCanvas"
+        );
+        const originalSignalCtx = originalSignalCanvas.getContext("2d");
+
+        originalSignalChart = new Chart(originalSignalCtx, {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                label: "Original Modulated Signal (ASK)",
+                data: modulatedSignal.map((value, index) => ({
+                  x: value,
+                  y: 0,
+                })),
+                borderColor: "blue",
+                borderWidth: 1,
+                pointBackgroundColor: "blue",
+                pointBorderColor: "blue",
+                pointRadius: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: false, // Prevents automatic resizing
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Real (Q)",
+                },
+              },
+              y: {
+                display: true,
+				                  text: "Imaginay (I)",
+              },
+            },
+          },
+        });
+      }
+
+      // Function to generate standard normal random variables using Box-Muller method
+      function standardNormal() {
+        let u1, u2;
+        do {
+          u1 = Math.random();
+          u2 = Math.random();
+        } while (u1 === 0);
+        const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        return z0;
+      }
+
+      generateSignal();
+
+// Listen for input changes on the numBits and snr input fields
+document
+  .getElementById("numBits")
+  .addEventListener("input", generateSignal);
+document
+  .getElementById("snr")
+  .addEventListener("input", generateSignal);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,397 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Virtual Labs</title>
+    <style>
+      table {
+        width: 80%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        width: 100px;
+      }
+    </style>
+<script>
+  function checkFrequencies() {
+    // Get value from input field
+    let snrdB = parseFloat(document.getElementById('specificSNRValue').value);
+
+    // Check if the value is outside the valid range
+    if (snrdB < -10 || snrdB > 20 || isNaN(snrdB)) {
+      alert("Choose SNR (dB) value between -10 to 20.");
+      window.location.reload(); // optional: reload page
+    }
+  }
+
+  // Attach event listeners to all buttons
+  function attachEventListeners() {
+    let buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.addEventListener('click', checkFrequencies);
+    });
+  }
+
+  // Run when DOM is ready
+  document.addEventListener('DOMContentLoaded', attachEventListeners);
+</script>
+
+    <script>
+	function refreshPage() {
+    location.reload();
+}
+      let observationData = [];
+      let enteredSNRValues = [];
+
+      function plotBER() {
+        const numBits = parseInt(document.getElementById("numBits").value);
+        const specificSNR = parseFloat(
+          document.getElementById("specificSNRValue").value
+        );
+
+        if (!isNaN(specificSNR)) {
+          if (!enteredSNRValues.includes(specificSNR)) {
+            const berResults = berPerformanceAnalysis(numBits, specificSNR);
+            observationData.push({ SNR: specificSNR, BER: berResults });
+            enteredSNRValues.push(specificSNR);
+            updateTable();
+          } else {
+            alert(
+              "SNR (dB) value already exists. Please enter a different value."
+            );
+          }
+        } else {
+          alert("Please enter a valid SNR value.");
+        }
+      }
+
+      function updateTable() {
+        const table = document.getElementById("observationTable");
+        table.innerHTML = "<tr><th>SNR (dB)</th><th>BER</th></tr>";
+
+        observationData.sort((a, b) => a.SNR - b.SNR);
+
+        observationData.forEach((data) => {
+          const newRow = table.insertRow(-1);
+          const cell1 = newRow.insertCell(0);
+          const cell2 = newRow.insertCell(1);
+
+          cell1.textContent = data.SNR;
+          cell2.textContent = data.BER;
+        });
+      }
+
+function updateGraph() {
+  const snrValues = [];
+  const berValues = [];
+
+  observationData.forEach((data) => {
+    snrValues.push(data.SNR);
+    berValues.push(data.BER);
+  });
+
+  if (snrValues.length > 0 && berValues.length > 0) {
+    // Actual data
+    const data = [
+      {
+        x: snrValues,
+        y: berValues,
+        mode: "lines+markers",
+        name: "Simulated",
+        type: "scatter",
+      },
+      {
+        x: [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+		y: [
+  0.411531636879061,
+  0.400949209382822,
+  0.389161822922096,
+  0.376057044885177,
+  0.361522230534359,
+  0.345449494234302,
+  0.327742925797194,
+  0.308328701730249,
+  0.287168775710550,
+  0.264278735428187,
+  0.239750061093477,
+  0.213776232695592,
+  0.186680676173632,
+  0.158942189053476,
+  0.131210191835325,
+  0.104298365231196,
+  0.0791424312580902,
+  0.0567090343662246,
+  0.0378522917320249,
+  0.0231363260692925,
+  0.0126736593387341,
+  0.00605522473664730,
+  0.00243853690831621,
+  0.000792835020667112,
+  0.000197105758226054,
+  3.49900171298526e-05,
+  4.06859646449387e-06,
+  2.77960971852334e-07,
+  9.72919877432146e-09,
+  1.46823761652663e-10,
+  7.68729897214018e-13
+],
+        mode: "lines+markers",
+        name: "Theoretical",
+        type: "scatter",
+      },
+    ];
+
+    const layout = {
+      title: "BER vs SNR in ASK (Logarithmic)",
+      xaxis: {
+        title: "SNR (dB)",
+		zeroline: false
+      },
+      yaxis: {
+        title: "Bit Error Rate (BER)",
+        type: "log",
+		zeroline: false
+      },
+    };
+
+    Plotly.newPlot("berChart", data, layout);
+  }
+ else {
+          alert("Please add data to the table before plotting.");
+        }
+      }
+
+      function generateRandomBits(numBits) {
+        let data = [];
+        for (let i = 0; i < numBits; i++) {
+          data.push(Math.round(Math.random()));
+        }
+        return data;
+      }
+/*
+      function awgn(data, snr) {
+        const variance = parseFloat((1 / 10 ** (snr / 10)).toFixed(10));
+        const noisyData = [];
+        for (let i = 0; i < data.length; i++) {
+          const noise = parseFloat(
+            (Math.sqrt(variance) * (Math.random() * 2 - 1)).toFixed(10)
+          );
+          noisyData.push(parseFloat((data[i] + noise).toFixed(10)));
+        }
+        return noisyData;
+      }
+*/
+function gaussianRandom() {
+  let u = 1 - Math.random(); // [0,1) -> (0,1]
+  let v = 1 - Math.random();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+function awgn(data, snr) {
+  const variance = parseFloat((1 / 10 ** (snr / 10)).toFixed(10));
+  const noisyData = [];
+  for (let i = 0; i < data.length; i++) {
+    const noise = parseFloat((Math.sqrt(variance) * gaussianRandom()).toFixed(10));
+    noisyData.push(parseFloat((data[i] + noise).toFixed(10)));
+  }
+  return noisyData;
+}
+      function calculateErrorRate(data, noisyData) {
+        let error = 0;
+        for (let i = 0; i < data.length; i++) {
+          if (
+            (noisyData[i] > 0.5 && data[i] === 0) ||
+            (noisyData[i] < 0.5 && data[i] === 1)
+          ) {
+            error++;
+          }
+        }
+        return parseFloat((error / data.length).toFixed(10));
+      }
+
+      function berPerformanceAnalysis(numBits, snr) {
+        const data = generateRandomBits(numBits);
+        const noisyData = awgn(data, snr);
+        const errorRate = calculateErrorRate(data, noisyData);
+        return errorRate;
+      }
+	  
+	          function printDiv(divId) {
+          let content = document.getElementById(divId).innerHTML;
+          let originalContent = document.body.innerHTML;
+        
+          document.body.innerHTML = content; // Replace the entire page with div content
+          window.print();
+          document.body.innerHTML = originalContent; // Restore original page content
+        }
+    </script>
+		<style>
+	#h1 {
+    color: #333;
+    font-size: 22px; /* Increased font size */
+    margin-bottom: 20px;
+}
+#container {
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 25px 40px;
+  max-width: 100%;
+  margin: 20px auto;
+  text-align: left;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h1 {
+  color: #1e3a8a;
+  font-size: 24px;
+  margin-bottom: 25px;
+  text-align: justify;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li.step {
+  margin: 12px 0;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+li.step::before {
+  content: "✔";
+  color: #10b981;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+li.step:hover {
+  transform: scale(1.02);
+  background-color: #f3f4f6;
+}
+
+/* Color code each step */
+.step1 {
+  background-color: #ffe0e0;
+  border-left: 5px solid #ef4444;
+}
+.step2 {
+  background-color: #e0f7ff;
+  border-left: 5px solid #0ea5e9;
+}
+.step3 {
+  background-color: #e0ffe5;
+  border-left: 5px solid #22c55e;
+}
+.step4 {
+  background-color: #f5e0ff;
+  border-left: 5px solid #a855f7;
+}
+	</style>
+  </head>
+  <body>
+	<div id = "instructions">
+    <h1 id = "h1">Instructions for Calculating BER vs. SNR for Amplitude Shift Keying (ASK)</h1>
+    <ul>
+        <li class="step step1">Step 1: Enter the number of bits and SNR (dB) values in the input fields.</li>
+		<li class="step step2">Step 2: Click on the "Calculate BER" button to view the BER value for the corresponding SNR (dB) value.</li>
+        <li class="step step3">Step 3: Click on the "Plot BER vs. SNR" button to plot the results.</li>
+		<li class="step step4">Step 4: Remember to reset the simulator if you change the number of bits, to plot BER vs. SNR for the updated bit count.</li>
+		<li class="step step1">The theoretical BER for binary ASK (BASK) in an AWGN channel is calculated as:
+BER  = (1/2) * erfc(0.5 * sqrt(SNR)).</li>
+		</ul>
+	</div>
+    <!-- sidebar and body -->
+    <div class="flex min-h-[80vh]">
+      <div class="px-6 pb-6 mt-1 flex-1">
+        <div class="">
+          <div class="flex flex-col justify-center">
+            <div class="flex max-lg:flex-col gap-x-12 gap-y-2 mt-2">
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="numBits">Number of Bits:</label>
+                  <input
+                    class="border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="numBits"
+                    min="1"
+                    value="1000000"
+                  />
+                </div>
+              </div>
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="specificSNRValue">SNR (dB):</label>
+                  <input
+                    class="max-lg:ml-10 border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="specificSNRValue"
+                    value="0"
+                  />
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  class="button"
+                  onclick="plotBER()"
+                >
+                  Calculate BER
+                </button>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  class="button"
+                  onclick="updateGraph()"
+                >
+                  Plot BER vs SNR
+                </button>
+              </div>
+			  			                <div class="flex items-center justify-center gap-1 mt-2">
+    <button style="position: absolute; right:200px;" class="button bg-green-500 text-white rounded-md px-2 py-1 text-base"
+	onclick="refreshPage()">Reset Simulator</button>
+              </div>
+            </div>
+          </div>
+          <div class="flex my-2 max-lg:flex-col">
+            <div class="flex-1 basis-2/5">
+              <h3 class="flex ml-3 text-[#42c7bc] text-[20px] font-medium">
+                BER Results
+              </h3>
+			  <div id = "div">
+              <table class="mt-1" id="observationTable">
+                <tr class="bg-slate-300">
+                  <th>SNR (dB)</th>
+                  <th>BER</th>
+                </tr>
+              </table>
+			  </div>
+			  <br/>
+			  <button onclick="printDiv('div')" class="bg-blue-500 text-white p-2 rounded-md">Print</button>
+            </div>
+            <div class="flex-1 basis-3/5">
+              <div id="berChart" width="600" height="400"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

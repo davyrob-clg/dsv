@@ -1,0 +1,231 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Virtual Labs</title>
+    <style>
+      table {
+        width: 80%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- sidebar and body -->
+    <div class="flex min-h-[80vh]">
+      <div class="px-6 pb-6 mt-1 flex-1">
+        <div class="">
+          <div class="flex flex-col justify-center">
+            <div class="flex max-lg:flex-col gap-x-12 gap-y-2 mt-2">
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="numSymbols">Number of Bits:</label>
+                  <input
+                    class="border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="numSymbols"
+                    min="1"
+                    value="1000000"
+                  />
+                </div>
+              </div>
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="snr">SNR (dB):</label>
+                  <input
+                    class="max-lg:ml-10 border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="snr"
+                    value="0"
+                  />
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  onclick="calculateBER()"
+                >
+                  Calculate SER
+                </button>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  onclick="plotBER()"
+                >
+                  Plot SER vs SNR
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="flex my-2 max-lg:flex-col">
+            <div class="flex-1 basis-2/5">
+              <h3 class="flex ml-3 text-[#42c7bc] text-[20px] font-medium">
+                BER Results
+              </h3>
+              <table class="mt-1" id="berTable">
+                <tr class="bg-slate-300">
+                  <th>SNR (dB)</th>
+                  <th>SER</th>
+                </tr>
+              </table>
+            </div>
+            <div class="flex-1 basis-3/5">
+              <div id="berPlot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function calculateBER() {
+        const numSymbols = parseInt(
+          document.getElementById("numSymbols").value
+        );
+        let snr_db = parseFloat(document.getElementById("snr").value);
+
+        // Check if SNR value already exists in the table
+        const tableRows = document
+          .getElementById("berTable")
+          .getElementsByTagName("tr");
+        for (let i = 1; i < tableRows.length; i++) {
+          const existingSNR = parseFloat(tableRows[i].cells[0].textContent);
+          if (existingSNR === snr_db) {
+            alert("SNR (dB) value already exists in the table!");
+            return;
+          }
+        }
+
+        // PSK orders to be tested
+        const psk_orders = [4];
+
+        // Initialize BER arrays
+        const ber_results = Array(psk_orders.length)
+          .fill()
+          .map(() => Array(1).fill(0));
+
+        // BER calculation for each PSK order and SNR value
+        for (let i = 0; i < psk_orders.length; i++) {
+          const psk_order = psk_orders[i];
+
+          // Generate random symbols
+          const data_symbols = Array.from({ length: numSymbols }, () =>
+            Math.floor(Math.random() * psk_order)
+          );
+
+          // Modulate symbols to generate signal
+          const modulated_signal = data_symbols.map((symbol) => {
+            const phase = (2 * Math.PI * symbol) / psk_order;
+            return { re: Math.cos(phase), im: Math.sin(phase) };
+          });
+
+          // Add AWGN to the signal
+          const snr_linear = 10 ** (snr_db / 10);
+          const received_signal = modulated_signal.map((symbol) => ({
+            re: symbol.re + Math.sqrt(1 / snr_linear) * (2 * Math.random() - 1),
+            im: symbol.im + Math.sqrt(1 / snr_linear) * (2 * Math.random() - 1),
+          }));
+
+          // Demodulate received signal
+          const demodulated_symbols = received_signal.map((symbol) => {
+            // Calculate phase angle
+            const angle = Math.atan2(symbol.im, symbol.re);
+            // Map phase angle to PSK symbol
+            let phase =
+              Math.round(
+                (angle < 0 ? angle + 2 * Math.PI : angle) /
+                  ((2 * Math.PI) / psk_order)
+              ) % psk_order;
+            return phase;
+          });
+
+          // Calculate BER
+          ber_results[i][0] =
+            data_symbols.reduce((count, symbol, index) => {
+              return count + (symbol !== demodulated_symbols[index] ? 1 : 0);
+            }, 0) / numSymbols;
+        }
+
+        // Display BER in table
+        appendBERToTable(snr_db, ber_results[0][0]);
+
+        // Sort the table
+        sortTable();
+      }
+
+      function appendBERToTable(snr_db, ber) {
+        const tableBody = document
+          .getElementById("berTable")
+          .getElementsByTagName("tbody")[0];
+        const newRow = tableBody.insertRow();
+        const snrCell = newRow.insertCell(0);
+        const berCell = newRow.insertCell(1);
+        snrCell.textContent = snr_db;
+        berCell.textContent = ber.toFixed(10);
+      }
+
+      function plotBER() {
+        const table = document.getElementById("berTable");
+        const snrData = Array.from(table.rows)
+          .slice(1)
+          .map((row) => parseFloat(row.cells[0].textContent));
+        const berData = Array.from(table.rows)
+          .slice(1)
+          .map((row) => parseFloat(row.cells[1].textContent));
+
+        const data = {
+          x: snrData,
+          y: berData,
+          type: "scatter",
+          mode: "lines+markers",
+          name: "SER vs SNR",
+        };
+
+        const layout = {
+          title: "SER vs SNR",
+          xaxis: {
+            title: "SNR (dB)",
+            type: "linear",
+            tickvals: snrData,
+            ticktext: snrData.map((val) => val.toString()),
+          },
+          yaxis: {
+            title: "SER",
+            type: "log",
+            range: [-7, 0], // Adjust the y-axis range as needed
+            tickvals: [1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
+            ticktext: ["1e-7", "1e-6", "1e-5", "1e-4", "1e-3", "1e-2", "1e-1"],
+          },
+        };
+
+        Plotly.newPlot("berPlot", [data], layout);
+      }
+
+      function sortTable() {
+        const table = document.getElementById("berTable");
+        const rows = Array.from(table.getElementsByTagName("tr")).slice(1); // Exclude header row
+        rows.sort(
+          (a, b) =>
+            parseFloat(a.cells[0].textContent) -
+            parseFloat(b.cells[0].textContent)
+        );
+        for (let i = 0; i < rows.length; i++) {
+          table.appendChild(rows[i]);
+        }
+      }
+    </script>
+  </body>
+</html>

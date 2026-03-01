@@ -1,0 +1,458 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Virtual Labs</title>
+    <style>
+      table {
+        width: 80%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        width: 100px;
+      }
+
+	#h1 {
+    color: #333;
+    font-size: 22px; /* Increased font size */
+    margin-bottom: 20px;
+}
+#container {
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 25px 40px;
+  max-width: 100%;
+  margin: 20px auto;
+  text-align: left;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h1 {
+  color: #1e3a8a;
+  font-size: 24px;
+  margin-bottom: 25px;
+  text-align: justify;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li.step {
+  margin: 12px 0;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+li.step::before {
+  content: "✔";
+  color: #10b981;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+li.step:hover {
+  transform: scale(1.02);
+  background-color: #f3f4f6;
+}
+
+/* Color code each step */
+.step1 {
+  background-color: #ffe0e0;
+  border-left: 5px solid #ef4444;
+}
+.step2 {
+  background-color: #e0f7ff;
+  border-left: 5px solid #0ea5e9;
+}
+.step3 {
+  background-color: #e0ffe5;
+  border-left: 5px solid #22c55e;
+}
+.step4 {
+  background-color: #f5e0ff;
+  border-left: 5px solid #a855f7;
+}
+	</style>
+
+  </head>
+  <body>
+	<div id = "instructions">
+    <h1 id = "h1">Instructions for Calculating BER vs. SNR for Phase Shift Keying (PSK)</h1>
+    <ul>
+        <li class="step step1">Step 1: Enter the number of bits and SNR (dB) values in the input fields.</li>
+		<li class="step step2">Step 2: Click on the "Calculate BER" button to view the BER value for the corresponding SNR (dB) value.</li>
+        <li class="step step3">Step 3: Click on the "Plot BER vs. SNR" button to plot the results.</li>
+		<li class="step step4">Step 4: Remember to reset the simulator if you change the number of bits, to plot BER vs. SNR for the updated bit count.</li>
+	    <li class="step step1">The theoretical BER for binary PSK (BPSK) in an AWGN channel is given by:
+ BER = 0.5 * erfc(sqrt(SNR)).</li>
+		</ul>
+	</div>
+    <!-- sidebar and body -->
+    <div class="flex min-h-[80vh]">
+      <div class="px-6 pb-6 mt-1 flex-1">
+        <div class="">
+          <div class="flex flex-col justify-center">
+            <div class="flex max-lg:flex-col gap-x-12 gap-y-2 mt-2">
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="numBits">Number of Bits:</label>
+                  <input
+                    class="border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="numBits"
+                    min="1"
+                    value="100000"
+                  />
+                </div>
+              </div>
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="snr">SNR (dB):</label>
+                  <input
+                    class="max-lg:ml-10 border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="snr"
+                    value="0"
+                  />
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  onclick="simulateAndPlot()"
+                >
+                  Calculate BER
+                </button>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  onclick="updatePlot()"
+                >
+                  Plot BER vs SNR
+                </button>
+              </div>
+			  			  			                <div class="flex items-center justify-center gap-1 mt-2">
+    <button style="position: absolute; right:200px;" class="button bg-green-500 text-white rounded-md px-2 py-1 text-base"
+	onclick="refreshPage()">Reset Simulator</button>
+              </div>
+            </div>
+          </div>
+          <div class="flex my-2 max-lg:flex-col">
+            <div class="flex-1 basis-2/5">
+              <h3 class="flex ml-3 text-[#42c7bc] text-[20px] font-medium">
+                BER Results
+              </h3>
+			  <div id = "div">
+              <table class="mt-1" id="dataTable">
+                <tr class="bg-slate-300">
+                  <th onclick="sortTable(0)">SNR (dB)</th>
+                  <th>BER</th>
+                </tr>
+              </table>
+			  </div>
+			  <br/>
+			  <button onclick="printDiv('div')" class="bg-blue-500 text-white p-2 rounded-md">Print</button>			  
+            </div>
+            <div class="flex-1 basis-3/5">
+              <div id="plot"></div>
+              <!-- <canvas id="berChart" width="600" height="400"></canvas> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+		<script>
+  function checkFrequencies() {
+    // Get value from input field
+    let snrdB = parseFloat(document.getElementById('snr').value);
+
+    // Check if the value is outside the valid range
+    if (snrdB < -10 || snrdB > 10 || isNaN(snrdB)) {
+      alert("Choose SNR (dB) value between -10 to 10.");
+      window.location.reload(); // optional: reload page
+    }
+  }
+
+  // Attach event listeners to all buttons
+  function attachEventListeners() {
+    let buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.addEventListener('click', checkFrequencies);
+    });
+  }
+
+  // Run when DOM is ready
+  document.addEventListener('DOMContentLoaded', attachEventListeners);
+</script>
+    <script>
+		function refreshPage() {
+    location.reload();
+}
+      let dataTable = document
+        .getElementById("dataTable")
+        .getElementsByTagName("tbody")[0];
+      let snrValues = [];
+      let berValues = [];
+
+      function simulateAndPlot() {
+        let num_bit = parseInt(document.getElementById("numBits").value); // Get number of bits from input
+        let snr = parseInt(document.getElementById("snr").value); // Get SNR from input
+
+        let SNRdB = [snr]; // Use the provided SNR
+        let SNR = SNRdB.map((snr) => Math.pow(10, snr / 10));
+
+        let max_run = 50; // Maximum number of iterations for a single SNR
+        let Eb = 1; // Bit energy
+
+        let BER_sim = new Array(SNR.length).fill(0);
+
+        for (let count = 0; count < SNR.length; count++) {
+          let avgError = 0;
+          let No = Eb / SNR[count]; // Calculate noise power from SNR
+
+          for (let run_time = 0; run_time < max_run; run_time++) {
+            let Error = 0;
+
+            let data = Array.from({ length: num_bit }, () =>
+              Math.floor(Math.random() * 2)
+            ); // Generate binary data source
+            let s = data.map((bit) => 2 * bit - 1); // Baseband BPSK modulation
+
+            let N = Array.from(
+              { length: num_bit },
+              () => Math.sqrt(No / 2) * gaussianRandom()
+            ); // Generate AWGN
+
+            let Y = s.map((sVal, index) => sVal + N[index]); // Received Signal
+
+            for (let k = 0; k < num_bit; k++) {
+              // Decision device taking hard decision and deciding error
+              if ((Y[k] > 0 && data[k] === 0) || (Y[k] < 0 && data[k] === 1)) {
+                Error++;
+              }
+            }
+
+            Error /= num_bit; // Calculate error/bit
+            avgError += Error; // Calculate error/bit for different runs
+          }
+          BER_sim[count] = avgError / max_run; // Calculate BER for a particular SNR
+        }
+
+        // Add SNR and BER values to the table
+        SNRdB.forEach((snr, index) => {
+          if (!snrValues.includes(snr)) {
+            // Check if SNR value already exists in the table
+            let row = dataTable.insertRow();
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            cell1.innerHTML = snr;
+            cell2.innerHTML = BER_sim[index];
+            snrValues.push(snr);
+            berValues.push(BER_sim[index]);
+          } else {
+            alert("SNR (dB) value already exists in the table.");
+          }
+        });
+
+        // Sort the table based on SNR values
+        sortTable(0);
+      }
+
+      function updatePlot() {
+        let snrValues = [];
+        let berValues = [];
+
+        // Extract data from the table
+        let table = document.getElementById("dataTable");
+        for (let i = 1; i < table.rows.length; i++) {
+          let cells = table.rows[i].cells;
+          snrValues.push(parseFloat(cells[0].innerHTML));
+          berValues.push(parseFloat(cells[1].innerHTML));
+        }
+
+        // Plot the BER vs SNR plot using data from the table
+        let data = [
+          {
+            x: snrValues,
+            y: berValues,
+            mode: "lines+markers",
+            name: "Simulated",
+          },
+		        {
+        x: [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        y: [
+  0.327360423009289,
+  0.307910470715079,
+  0.286714527581443,
+  0.263789505256266,
+  0.239228710767672,
+  0.213228018357620,
+  0.186113817483389,
+  0.158368318809598,
+  0.130644488522829,
+  0.103759095953406,
+  0.0786496035251426,
+  0.0562819519765415,
+  0.0375061283589260,
+  0.0228784075610853,
+  0.0125008180407376,
+  0.00595386714777866,
+  0.00238829078093281,
+  0.000772674815378444,
+  0.000190907774075993,
+  3.36272284196175e-05,
+  3.87210821552204e-06
+],
+        mode: "lines+markers",
+        name: "Theoretical",
+        type: "scatter",
+      },
+        ];
+
+        let layout = {
+          title: "PSK BER Simulation from Table Data",
+          xaxis: {
+            title: "SNR (dB)",
+			zeroline: false
+          },
+          yaxis: {
+            title: "BER",
+            type: "log",
+			zeroline: false
+          },
+        };
+
+        Plotly.newPlot("plot", data, layout);
+      }
+
+      function erfc(x) {
+        // Error function complementary
+        return 1 - erf(x);
+      }
+
+      function erf(x) {
+        // Error function
+        const a1 = 0.254829592;
+        const a2 = -0.284496736;
+        const a3 = 1.421413741;
+        const a4 = -1.453152027;
+        const a5 = 1.061405429;
+        const p = 0.3275911;
+
+        const sign = x >= 0 ? 1 : -1;
+        x = Math.abs(x);
+
+        const t = 1 / (1 + p * x);
+        const y =
+          1 -
+          ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+
+        return sign * y;
+      }
+
+      function gaussianRandom() {
+        // Generates a random number from a Gaussian distribution
+        // Using Box-Muller transform
+        let u1, u2;
+        do {
+          u1 = Math.random();
+          u2 = Math.random();
+        } while (u1 === 0); // Converting (0,1] to [0,1)
+
+        const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        // const z1 = Math.sqrt(-2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
+        return z0;
+      }
+
+      function sortTable(n) {
+        let table,
+          rows,
+          switching,
+          i,
+          x,
+          y,
+          shouldSwitch,
+          dir,
+          switchcount = 0;
+        table = document.getElementById("dataTable");
+        switching = true;
+        // Set the sorting direction to ascending:
+        dir = "asc";
+        /* Make a loop that will continue until
+          no switching has been done: */
+        while (switching) {
+          // Start by saying: no switching is done:
+          switching = false;
+          rows = table.rows;
+          /* Loop through all table rows (except the
+              first, which contains table headers): */
+          for (i = 1; i < rows.length - 1; i++) {
+            // Start by saying there should be no switching:
+            shouldSwitch = false;
+            /* Get the two elements you want to compare,
+                  one from current row and one from the next: */
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+            /* Check if the two rows should switch place,
+                  based on the direction, asc or desc: */
+            if (dir === "asc") {
+              if (parseFloat(x.innerHTML) > parseFloat(y.innerHTML)) {
+                // If so, mark as a switch and break the loop:
+                shouldSwitch = true;
+                break;
+              }
+            } else if (dir === "desc") {
+              if (parseFloat(x.innerHTML) < parseFloat(y.innerHTML)) {
+                // If so, mark as a switch and break the loop:
+                shouldSwitch = true;
+                break;
+              }
+            }
+          }
+          if (shouldSwitch) {
+            /* If a switch has been marked, make the switch
+                  and mark that a switch has been done: */
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            // Each time a switch is done, increase this count by 1:
+            switchcount++;
+          } else {
+            /* If no switching has been done AND the direction is "asc",
+                  set the direction to "desc" and run the while loop again. */
+            if (switchcount === 0 && dir === "asc") {
+              dir = "desc";
+              switching = true;
+            }
+          }
+        }
+      }
+	  
+	  	          function printDiv(divId) {
+          let content = document.getElementById(divId).innerHTML;
+          let originalContent = document.body.innerHTML;
+        
+          document.body.innerHTML = content; // Replace the entire page with div content
+          window.print();
+          document.body.innerHTML = originalContent; // Restore original page content
+        }
+    </script>
+  </body>
+</html>

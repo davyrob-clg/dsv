@@ -1,9 +1,10 @@
 
-### You can use the visualizer at https://dvs.cs-unigib.org/
+### You can use the visualizer at https://dsv.cs-unigib.org/
 
 ## About
 
 This web app helps to visualize how the digital signals are encoded in Data communication.
+
 It includes the following encode methods ,
 
 1. Unipolar NRZ(Non Return to Zero )
@@ -20,27 +21,29 @@ It includes the following encode methods ,
 
 
 
-
-
 ## For Devs
+
+This is the Vite version which is easy to deploy
 
 1.  Clone the repo:
 
-        git clone https://github.com/davy-clg/digital-signal-visualizer.git
+        git clone https://github.com/davy-clg/dsv.git
 
 2.  Install dependencies:
 
-        npm install
+        npm ci
 
-3.  Run webpack:
+3.  Run Vite:
 
-        npm start
+        npm run dev
 
-The page will open up automatically at http://localhost:3000 
+The page will open up automatically at http://localhost:5000
 <br/><br/><br/><br/><br/><br/><br/><br/>
 
 
 ##### *Canvas Boilerplate Code from https://github.com/christopher4lis/canvas-boilerplate* 
+
+I converted this to Vite - which is much the same as webpack but uses a lot less dependencies. 
 
 ## Acks
 

@@ -1,6 +1,6 @@
 import { getInputValue, randomIntFromRange } from './utils'
 import { selectMethod } from './formulas'
-import  { explanationMap  } from './explanations'
+import { explanationMap } from './explanations'
 import "../css/styles.css"
 
 const canvas = document.querySelector('canvas')
@@ -39,14 +39,14 @@ canvas.height = HEIGHT
 function selectExplainMessage(method) {
 
 
-// Map through the explanationMap to find the matching key and set the explain message
+  // Map through the explanationMap to find the matching key and set the explain message
 
-console.log("Setting explain message to: " + method);
-  
+  console.log("Setting explain message to: " + method);
+
   document.getElementById('explain-message').value = explanationMap["welcome_msg"];
   Object.entries(explanationMap).forEach(([key, value]) => {
 
-    
+
     if (key === method) {
       document.getElementById('explain-message').value = value;
       console.log("Setting explain message to: " + value);
@@ -59,9 +59,9 @@ console.log("Setting explain message to: " + method);
 
 function selectOptions() {
 
-  
+
   selectExplainMessage(this.value);
-  
+
   console.log('option: ' + this.value + ' selected');
   switch (this.value) {
     case '1':
@@ -129,6 +129,24 @@ addEventListener('resize', () => {
   init()
 })
 
+function launchASK() {
+  // Change the current page URL
+   console.log("ASK clicked")
+  window.location.href = 'src/ask.html';
+  // Alternatively, you can use window.location.assign('new_page.html');
+}
+
+
+// Event listner for encode button
+document.getElementById('buttonAsk').onclick = () => {
+
+  console.log("ASK clicked")
+  window.location.href = 'src/ask.html';
+  // Alternatively, you can use window.location.assign('new_page.html');
+
+
+};
+
 const coll = document.getElementsByClassName("collapsible");
 
 
@@ -156,7 +174,7 @@ document.getElementById('button').onclick = () => {
   console.log("encode clicked")
 
   BINARY = getInputValue()
-  document.getElementById('title').innerHTML = document.getElementById("options").options[document.getElementById("options").selectedIndex].text;
+  //document.getElementById('title').innerHTML = document.getElementById("options").options[document.getElementById("options").selectedIndex].text;
   method = document.getElementById("options").value
   console.log("Select the option: " + method)
   console.log(BINARY)
@@ -184,6 +202,28 @@ document.getElementById('button').onclick = () => {
 
 };
 
+function convertToBinaryUsingCharacterCodes(input) {
+  let binaryResult = '';
+
+  for (let i = 0; i < input.length; i++) {
+    const charCode = input.charCodeAt(i);
+    let binaryValue = '';
+
+    for (let j = 7; j >= 0; j--) {
+      binaryValue += (charCode >> j) & 1;
+    }
+
+    binaryResult += binaryValue;
+  }
+
+  return binaryResult.trim();
+}
+
+console.log("Binary conversion");
+const inputString = "GFG";
+const binaryRepresentation =
+  convertToBinaryUsingCharacterCodes(inputString);
+console.log(binaryRepresentation);
 
 // Binary input checker for validating if the input is binary or not and also clear the canvas if the input is invalid
 
@@ -194,6 +234,19 @@ binaryInput.addEventListener('input', function (e) {
   this.value = this.value.replace(/[^01]/g, '');
 });
 
+const asciiInput = document.getElementById('textascii');
+
+asciiInput.addEventListener('input', function (e) {
+  // This regex replaces any character that is NOT a printable ASCII character with an empty string
+  var binaryValue = document.getElementById('binary');
+  this.value = this.value.replace(/[^ -~]/g, '');
+
+  var binaryResult = convertToBinaryUsingCharacterCodes(this.value);
+  binaryInput.value = binaryResult;
+
+  this.value = binaryResult ? this.value : '';
+
+});
 
 
 
@@ -267,6 +320,6 @@ function init() {
   drawBoard()
   selectMethod(method, c, BINARY, HEIGHT, WIDTH)
   selectExplainMessage(method);
-  
+
 }
 init()

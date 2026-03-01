@@ -1,0 +1,165 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Virtual Labs</title>
+  </head>
+  <body>
+    <!-- sidebar and body -->
+    <div class="flex min-h-[80vh]">
+      <div class="px-6 pb-6 mt-1 flex-1">
+        <div class="flex flex-col">
+          <div class="flex max-lg:flex-col gap-x-12 gap-y-2 mt-4">
+            <div class="flex items-center gap-1">
+              <label class="text-[#2c99ce] font-medium" for="numSymbols"
+                >Number of Symbols:</label
+              >
+              <input
+                class="border border-black px-2 py-1 rounded-sm"
+                type="number"
+                id="numSymbols"
+                value="100"
+                max="10000"
+              />
+            </div>
+            <div class="flex items-center gap-1">
+              <label class="text-[#2c99ce] font-medium" for="snr"
+                >Signal-to-Noise Ratio (SNR) in dB:</label
+              >
+              <input
+                class="border border-black px-2 py-1 rounded-sm"
+                type="number"
+                id="snr"
+                value="20"
+              />
+            </div>
+          </div>
+          <div class="flex justify-center my-4">
+            <canvas
+              id="constellationDiagram"
+              width="590px"
+              height="480px"
+            ></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Get input elements for number of symbols and SNR
+      const numSymbolsInput = document.getElementById("numSymbols");
+      const snrInput = document.getElementById("snr");
+
+      // Get canvas element and context
+      const canvas = document.getElementById("constellationDiagram");
+      const ctx = canvas.getContext("2d");
+
+      // Function to generate QPSK constellation diagram with AWGN
+      function generateConstellationDiagram(numSymbols, snr) {
+        // Define the amplitude of the symbols (normalized to 1)
+        const symbolAmplitude = 1;
+
+        // Generate random integer symbols from 0 to 3
+        const symbols = Array.from({ length: numSymbols }, () =>
+          Math.floor(Math.random() * 4)
+        );
+
+        // Map symbols to phase shifts
+        const phaseShifts = symbols.map(
+          (symbol) => symbol * ((2 * Math.PI) / 4)
+        ); // 4-PSK has 4 phase shifts
+
+        // Generate complex symbols based on the phase shifts
+        const complexSymbols = phaseShifts.map((phase) => ({
+          re: Math.cos(phase),
+          im: Math.sin(phase),
+        }));
+
+        // Calculate noise power based on SNR
+        const noisePower = symbolAmplitude ** 2 / 10 ** (snr / 10);
+
+        // Generate Gaussian noise samples using Box-Muller transform theorem
+        const noise = [];
+        for (let i = 0; i < numSymbols; i++) {
+          const u1 = Math.random();
+          const u2 = Math.random();
+          const z1 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+          const z2 = Math.sqrt(-2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
+          noise.push({
+            re: z1 * Math.sqrt(noisePower),
+            im: z2 * Math.sqrt(noisePower),
+          });
+        }
+
+        // Add noise to complex symbols
+        const noisyComplexSymbols = complexSymbols.map((symbol, index) => ({
+          re: symbol.re + noise[index].re,
+          im: symbol.im + noise[index].im,
+        }));
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Plot the constellation diagram
+        ctx.fillStyle = "blue";
+        noisyComplexSymbols.forEach((symbol) => {
+          const x = symbol.re * 200 + canvas.width / 2;
+          const y = symbol.im * 200 + canvas.height / 2;
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+
+        // Draw grid
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.stroke();
+
+        // Add labels
+        ctx.font = "12px Arial";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "right";
+        ctx.fillText(
+          "Quadrature-phase",
+          canvas.width - 10,
+          canvas.height / 2 + 20
+        );
+        ctx.textAlign = "center";
+        ctx.fillText("In-phase", canvas.width / 2, canvas.height - 10);
+        ctx.fillText("-1", 10, canvas.height / 2 + 15);
+        ctx.fillText("1", canvas.width - 30, canvas.height / 2 + 15);
+        ctx.fillText("-1", canvas.width / 2 - 25, canvas.height - 5);
+        ctx.fillText("1", canvas.width / 2 - 25, 15);
+        ctx.fillText("0", canvas.width / 2 - 5, canvas.height / 2 + 15);
+        ctx.closePath();
+      }
+
+      // Initial generation of constellation diagram
+      generateConstellationDiagram(
+        parseInt(numSymbolsInput.value),
+        parseFloat(snrInput.value)
+      );
+
+      // Event listener for input change
+      numSymbolsInput.addEventListener("input", function () {
+        generateConstellationDiagram(
+          parseInt(this.value),
+          parseFloat(snrInput.value)
+        );
+      });
+
+      snrInput.addEventListener("input", function () {
+        generateConstellationDiagram(
+          parseInt(numSymbolsInput.value),
+          parseFloat(this.value)
+        );
+      });
+    </script>
+  </body>
+</html>

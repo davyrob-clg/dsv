@@ -1,0 +1,396 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Virtual Labs</title>
+    <style>
+      table {
+        width: 80%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid black;
+        padding: 8px;
+        text-align: center;
+      }
+      th {
+        width: 100px;
+      }
+
+	#h1 {
+    color: #333;
+    font-size: 22px; /* Increased font size */
+    margin-bottom: 20px;
+}
+#container {
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 25px 40px;
+  max-width: 100%;
+  margin: 20px auto;
+  text-align: left;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h1 {
+  color: #1e3a8a;
+  font-size: 24px;
+  margin-bottom: 25px;
+  text-align: justify;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li.step {
+  margin: 12px 0;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+li.step::before {
+  content: "✔";
+  color: #10b981;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+li.step:hover {
+  transform: scale(1.02);
+  background-color: #f3f4f6;
+}
+
+/* Color code each step */
+.step1 {
+  background-color: #ffe0e0;
+  border-left: 5px solid #ef4444;
+}
+.step2 {
+  background-color: #e0f7ff;
+  border-left: 5px solid #0ea5e9;
+}
+.step3 {
+  background-color: #e0ffe5;
+  border-left: 5px solid #22c55e;
+}
+.step4 {
+  background-color: #f5e0ff;
+  border-left: 5px solid #a855f7;
+}
+	</style>
+  </head>
+  <body>
+  	<div id = "instructions">
+    <h1 id = "h1">Instructions for Calculating BER vs. SNR for Frequency Shift Keying (FSK)</h1>
+    <ul>
+        <li class="step step1">Step 1: Enter the number of bits and SNR (dB) values in the input fields.</li>
+		<li class="step step2">Step 2: Click on the "Calculate BER" button to view the BER value for the corresponding SNR (dB) value.</li>
+        <li class="step step3">Step 3: Click on the "Plot BER vs. SNR" button to plot the results.</li>
+		<li class="step step4">Step 4: Remember to reset the simulator if you change the number of bits, to plot BER vs. SNR for the updated bit count.</li>
+	    <li class="step step4">The theoretical BER for binary FSK (BFSK) in an AWGN channel is calculated as:
+BER =  (1/2) * erfc(sqrt(SNR_bfsk / 2)).</li>
+		</ul>
+	</div>
+    <!-- sidebar and body -->
+    <div class="flex min-h-[80vh]">
+      <div class="px-6 pb-6 mt-1 flex-1">
+        <div class="">
+          <div class="flex flex-col justify-center">
+            <div class="flex max-lg:flex-col gap-x-12 gap-y-2 mt-2">
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="numBits">Number of Bits:</label>
+                  <input
+                    class="border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="numBits"
+                    min="1"
+                    value="100000"
+                  />
+                </div>
+              </div>
+              <div class="">
+                <div class="flex items-center justify-center gap-1">
+                  <label for="snr">SNR (dB):</label>
+                  <input
+                    class="max-lg:ml-10 border border-black px-2 py-1 rounded-sm"
+                    type="number"
+                    id="snr"
+                    min="0"
+                    step="1"
+                    value="0"
+                  />
+                </div>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  id="runSimulationButton"
+                >
+                  Calculate BER
+                </button>
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="bg-blue-500 text-white rounded-md px-2 py-1"
+                  id="plotButton"
+                >
+                  Plot BER vs SNR
+                </button>
+              </div>
+			  			  			                <div class="flex items-center justify-center gap-1 mt-2">
+    <button style="position: absolute; right:200px;" class="button bg-green-500 text-white rounded-md px-2 py-1 text-base"
+	onclick="refreshPage()">Reset Simulator</button>
+              </div>
+            </div>
+          </div>
+          <div class="flex my-2 max-lg:flex-col">
+            <div class="flex-1 basis-2/5">
+              <h3 class="flex ml-3 text-[#42c7bc] text-[20px] font-medium">
+                BER Results
+              </h3>
+			  <div id = "div">
+              <table class="mt-1" id="resultTable">
+                <tr class="bg-slate-300">
+                  <th onclick="sortTable(0)">SNR (dB)</th>
+                  <th>Bit Error Rate (BER)</th>
+                </tr>
+              </table>
+			  </div>
+			  <br/>
+			  <button onclick="printDiv('div')" class="bg-blue-500 text-white p-2 rounded-md">Print</button>			  
+            </div>
+            <div class="flex-1 basis-3/5">
+              <div id="plotDiv"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+	<script>
+  function checkFrequencies() {
+    // Get value from input field
+    let snrdB = parseFloat(document.getElementById('snr').value);
+
+    // Check if the value is outside the valid range
+    if (snrdB < -10 || snrdB > 10 || isNaN(snrdB)) {
+      alert("Choose SNR (dB) value between -10 to 10.");
+      window.location.reload(); // optional: reload page
+    }
+  }
+
+  // Attach event listeners to all buttons
+  function attachEventListeners() {
+    let buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.addEventListener('click', checkFrequencies);
+    });
+  }
+
+  // Run when DOM is ready
+  document.addEventListener('DOMContentLoaded', attachEventListeners);
+</script>
+    <script>
+		function refreshPage() {
+    location.reload();
+}
+      let ber = 0;
+      let results = [];
+      let snrSet = new Set();
+      let BER = null;
+      let BERForHOne = null;
+
+      function upsampleSignal(signal, factor) {
+        return signal.flatMap(bit => Array(factor).fill(bit));
+      }
+
+      function addAWGN(signal, snrDb) {
+        const snrLinear = Math.pow(10, snrDb / 10);
+        const noiseVariance = 1 / (2 * snrLinear);
+        return signal.map(x => x + Math.sqrt(noiseVariance) * randn_bm());
+      }
+
+      function randn_bm() {
+        let u = 0, v = 0;
+        while (u === 0) u = Math.random();
+        while (v === 0) v = Math.random();
+        return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+      }
+
+      function manualConv(signal, h) {
+        let result = new Array(signal.length).fill(0);
+        for (let n = 0; n < signal.length; n++) {
+          for (let k = 0; k < h.length; k++) {
+            if (n - k >= 0) {
+              result[n] += signal[n - k] * h[k];
+            }
+          }
+        }
+        return result;
+      }
+function updateTable() {
+  const table = document.getElementById('resultTable');
+  
+  // Clear previous rows except the header
+  while (table.rows.length > 1) {
+    table.deleteRow(1);
+  }
+
+  // Sort results by SNR in ascending order and update the table
+  results.sort((a, b) => a.snrDb - b.snrDb).forEach(result => {
+    const row = table.insertRow();
+    const snrCell = row.insertCell(0);
+    const berCell = row.insertCell(1);
+    snrCell.textContent = result.snrDb;
+    berCell.textContent = result.ber.toFixed(6);
+  });
+}
+      function runSimulation() {
+        const snrDb = parseFloat(document.getElementById('snr').value);
+        const excessDelayMs = 3;
+        const numTaps = 4;
+        const bitRate = 100;
+        const Sig_Length = parseFloat(document.getElementById('numBits').value);
+
+        const delays = Array.from({ length: numTaps }, (_, i) => i);
+        let h = delays.map(d => 0.8 * Math.exp(-d / (numTaps / 2)));
+        h = h.map(v => v / Math.sqrt(h.reduce((acc, x) => acc + x * x, 0)));
+
+        const R_BFSK = Array.from({ length: Sig_Length }, () => Math.round(Math.random()));
+        const I_BFSK = R_BFSK.map(bit => bit ^ 1);
+        const upsampledtransmittedSignal = upsampleSignal(R_BFSK, 10);
+
+        const modulatedSignalR = R_BFSK;
+        const upsampledmodulatedSignalR = upsampleSignal(modulatedSignalR, 10);
+        const modulatedSignalI = I_BFSK;
+        const upsampledmodulatedSignalI = upsampleSignal(modulatedSignalI, 10);
+
+        const Y_concatenated = modulatedSignalR.concat(modulatedSignalI);
+
+        const noisySignal = addAWGN(Y_concatenated, snrDb);
+
+        const convolvedSignal = manualConv(noisySignal, h);
+        const Z_real = convolvedSignal.slice(0, Sig_Length);
+        const Z_imag = convolvedSignal.slice(Sig_Length);
+
+        let E_BFSK = 0;
+        let demodulatedBits = [];
+        for (let k = 0; k < Sig_Length; k++) {
+          let demod_bit = Z_real[k] > Z_imag[k] ? 1 : 0;
+          demodulatedBits.push(demod_bit);
+          if (demod_bit !== R_BFSK[k]) {
+            E_BFSK += 1;
+          }
+        }
+
+        BER = E_BFSK / Sig_Length;
+
+        const h_one = [1];
+        const noisySignalForHOne = addAWGN(Y_concatenated, snrDb);
+        const convolvedSignalForHOne = manualConv(noisySignalForHOne, h_one);
+
+        const Z_realForHOne = convolvedSignalForHOne.slice(0, Sig_Length);
+        const Z_imagForHOne = convolvedSignalForHOne.slice(Sig_Length);
+
+        let E_BFSKForHOne = 0;
+        let demodbitForHOne = [];
+        for (let k = 0; k < Sig_Length; k++) {
+          let demod_bitForHOne = Z_realForHOne[k] > Z_imagForHOne[k] ? 1 : 0;
+          demodbitForHOne.push(demod_bitForHOne);
+          if (demod_bitForHOne !== R_BFSK[k]) {
+            E_BFSKForHOne += 1;
+          }
+        }
+
+        ber = E_BFSKForHOne / Sig_Length;
+        console.log(ber);
+
+            // Check for duplicate SNR and alert if exists
+            if (snrSet.has(snrDb)) {
+                alert("SNR value already exists in the table.");
+                return;
+            }
+			
+        results.push({ snrDb, ber });
+        snrSet.add(snrDb);
+		updateTable();
+      }
+
+function plotResults() {
+  const snrArray = Array.from(snrSet).sort((a, b) => a - b);
+  const berArray = snrArray.map(snr => results.find(result => result.snrDb === snr).ber);
+
+  const simulatedTrace = {
+    x: snrArray,
+    y: berArray,
+    type: 'scatter',
+    mode: 'lines+markers',
+    name: 'Simulated'
+  };
+
+  const theoreticalTrace = {
+    x: [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    y: [
+  0.375914817022925,
+  0.361364698511629,
+  0.345275594493536,
+  0.327551765173318,
+  0.308119679065765,
+  0.286941743726049,
+  0.264034207638018,
+  0.239489463025899,
+  0.213502185504006,
+  0.186397281391374,
+  0.158655253931457,
+  0.130927296755524,
+  0.104028637085389,
+  0.0788958719817244,
+  0.0564953017493617,
+  0.0376789881474634,
+  0.0230071388778660,
+  0.0125870331221446,
+  0.00600438640016356,
+  0.00241331041963386,
+  0.000782701129001274
+],
+    mode: "lines+markers",
+    name: "Theoretical",
+    type: "scatter"
+  };
+
+  const layout = {
+    title: 'BER vs SNR for FSK',
+    xaxis: { title: 'SNR (dB)', zeroline: false },
+    yaxis: { title: 'BER', type: 'log', zeroline: false  }
+  };
+
+  Plotly.newPlot('plotDiv', [simulatedTrace, theoreticalTrace], layout);
+}
+
+
+      document.getElementById('runSimulationButton').addEventListener('click', runSimulation);
+      document.getElementById('plotButton').addEventListener('click', plotResults);
+	  
+	  	          function printDiv(divId) {
+          let content = document.getElementById(divId).innerHTML;
+          let originalContent = document.body.innerHTML;
+        
+          document.body.innerHTML = content; // Replace the entire page with div content
+          window.print();
+          document.body.innerHTML = originalContent; // Restore original page content
+        }
+    </script>
+  </body>
+</html>
