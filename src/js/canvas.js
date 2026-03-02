@@ -132,16 +132,18 @@ addEventListener('resize', () => {
 function launchASK() {
   // Change the current page URL
    console.log("ASK clicked")
-  window.location.href = 'src/ask.html';
-  // Alternatively, you can use window.location.assign('new_page.html');
+   //alert("This will open a new page for ASK modulation simulation. Please allow pop-ups for this site if you don't see the new page.")
+   window.open("/src/ask.html", '_self').focus();
+  
+  //window.location.assign("/src/ask.html");
 }
 
 
 // Event listner for encode button
 document.getElementById('buttonAsk').onclick = () => {
 
-  console.log("ASK clicked")
-  window.location.href = 'src/ask.html';
+    
+    launchASK();    
   // Alternatively, you can use window.location.assign('new_page.html');
 
 

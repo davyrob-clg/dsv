@@ -1,0 +1,164 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>DSV Modulation and Demodulation</title>
+   
+   <link rel="stylesheet" type="text/css" href="src/css/styles_ask.css">
+
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" charset="utf-8"></script>
+
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+<!-- Logo -->
+     <div class="logo-container">   
+     <img src="/logo.png" alt="Logo" class="logo">
+      </div>
+  <h4 id='apptitle'>Gibraltar University Digital Encoding Visualizer - Modulation and Demodulation</h4>
+
+  <!-- sidebar and body -->
+  <div class="flex min-h-[80vh]">
+    <div class="px-6 pb-6 flex-1">
+      <!--  -->
+      <div class="flex">
+        <div class="flex-1 flex basis-4/5 flex-col">
+          <div class="flex max-lg:flex-col mt-5 items-center gap-x-2 gap-y-2">
+            <div class="flex-1">
+              <div class="flex items-center gap-1">
+                <label for="carrier_frequency" class="text-[#2c99ce] text-md font-medium">Carrier Frequency in
+                  Hz:</label>
+                <input class="border w-36 border-black px-1 py-1 rounded-sm" type="number" id="carrier_frequency"
+                  value="20" />
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-1">
+                <label for="sampling_frequency" class="text-[#2c99ce] text-md font-medium">Sampling Frequency in
+                  Hz:</label>
+                <input class="border w-36 border-black px-1 py-1 rounded-sm" type="number" id="sampling_frequency"
+                  value="1000" />
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <label for="num_bits" class="text-[#2c99ce] text-md font-medium">Number of Bits:</label>
+                <input class="border px-1 w-36 border-black py-1 rounded-sm" type="number" id="num_bits" value="20" />
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-1">
+                <label for="bit_rate" class="text-[#2c99ce] text-md font-medium">Bit Rate in bps:</label>
+                <input class="border w-36 border-black px-1 py-1 rounded-sm" type="number" id="bit_rate" value="10" />
+              </div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-1">
+                <button class="bg-green-500 text-white rounded-md px-3 py-1 hover:scale-105 mt-3"
+                  onclick="location.reload();">
+                  Reset Simulator
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 border-t-2">
+        <div class="flex gap-2">
+          <div class="w-[50%] flex flex-col items-center">
+            <div class="relative my-4 w-[659px] h-[233px]">
+              <!-- buttons -->
+              <div class="absolute top-[132px] left-[5px]">
+                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button" id="generate" >Generate Binary</button>                  
+                  
+                </button>
+              </div>
+              <div class="absolute top-[234px] left-[220px]">
+                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button" id="generateCarrier" >
+                  Generate Carrier
+                </button>
+              </div>
+              <div class="absolute top-[112px] right-[55px]">
+                <button class="bg-blue-500 text-white rounded-md px-2 py-1" class="button" id="simulateask" value="Simulate ASK">Generate ASK
+                </button>
+              </div>
+              <div class="absolute top-[300px] left-[177px]">
+                <button class="bg-gray-500 text-white rounded-md px-2 py-1" class="button"
+                  onclick="generateSpectrumASK()">
+                  Show Frequency Spectrums
+                </button>
+              </div>
+              <div class="absolute top-[340px] left-[177px]">
+                <a href="../constellation/ask_constellation.html">
+                  <button class="bg-gray-500 text-white rounded-md px-2 py-1" class="button">
+                    Plot Constellation Diagram
+                  </button>
+                </a>
+              </div>
+              <img src="./images/simulation/askimg1.png" alt="ask1" class="w-[100%] h-[100%]" />
+            </div>
+          </div>
+          <div class="flex w-[48%] flex-col justify-center items-center">
+            <div id="modulated-plot" class="w-[100%]"></div>
+            <div id="superimposed" class="w-[100%]"></div>
+            <div id="carrier-plot" class="w-[100%]"></div>
+            <div id="plot" class="w-[100%]"></div>
+            <div id="frequencySpectrum" class="w-[100%]"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="demodulation">
+  
+    <!-- sidebar and body -->
+    <div class="flex min-h-[80vh]">
+      <div class="px-6 pb-6 flex-1">
+        <div class="flex">
+          <div class="flex-1 flex basis-4/5 flex-col">
+            <div class="flex max-lg:flex-col mt-5 items-center gap-x-2 gap-y-2">
+              <!-- Input fields -->
+
+            </div>
+          </div>
+          
+        </div>
+        <div class="mt-4 border-t-2">
+          <div class="flex gap-2">
+            <div class="w-[50%] flex flex-col items-center">
+              <div class="relative my-4 w-[659px] h-[233px]">
+                <!-- buttons -->
+                <div class="absolute top-[124px] right-[90px]">
+                  <button class="bg-blue-500 text-white rounded-md px-2 py-1" id="demodulateASK" >Demodulate ASK</button>
+
+                </div>
+                <img src="./images/simulation/askimg2.png" alt="ask1" class="w-[100%] h-[100%]" />
+              </div>
+            </div>
+            <div class="flex w-[48%] flex-col justify-center items-center">
+              <div id="modulated-plot" class="w-[100%]"></div>
+              <div id="carrier-plot" class="w-[100%]"></div>
+              <div id="plot" class="w-[100%]"></div>
+              <div id="demodulated-plot" class="w-[100%]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+   <script type="module" src="/src/js/ask.js"></script>
+ 
+</body>
+
+</html>
