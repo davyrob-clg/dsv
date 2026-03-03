@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- <meta charset="UTF-8" /> -->
+  <title>Digital Signal Visualizer</title>
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="stylesheet" type="text/css"
+  
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet">
+  
+   
+  <script type="module" crossorigin src="/assets/main-CO4ZeSNL.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-Bn_Z5vpt.css">
+</head>
+
+<body>
+    <!-- Logo -->
+     <div class="logo-container">   
+     <img src="/logo.png" alt="Logo" class="logo">
+      </div>
+  <h4 id='apptitle'>Gibraltar University Digital Encoding Visualizer
+    </h6>
+    <div class="container">
+      <select id="options">
+        <option value="uniPolarNRZ">Unipolar NRZ</option>
+        <option value="NRZL">NRZ - L</option>
+        <option value="NRZI">NRZ - I</option>
+        <option value="AMI">Bi polar AMI</option>
+        <option value="PST">Pseudoternary</option>
+        <option value="MLT3">MLT-3</option>
+        <option value="diffMan">Differential Manchester</option>
+        <option value="MAN">Manchester</option>
+        <option value="B8ZS">B8ZS</option>
+        <option value="HDB3">HDB3</option>
+        <option value="4B5B">4B5B Encoding ( With NRZ-I )</option>
+      </select><br>
+    </div>
+    <div class="container">
+       <!-- <input type="text" id="binary" placeholder="Enter Binary Value"><br><br>  -->
+      <input type="text" id="textascii" placeholder="Enter Ascii" inputmode="character"> 
+
+       <input type="text" id="binary" placeholder="Enter binary e.g. 101010" inputmode="numeric"> 
+<!--
+Source - https://stackoverflow.com/a/63150224
+Posted by PAULOPRST
+Retrieved 2026-03-02, License - CC BY-SA 4.0
+-->
+
+      
+
+      
+      <input class="btn-submit" id="button" type="submit" value="Encode"><br><br>
+      <input class="btn-submit" id="buttonAsk" type="submit" value="Modulate">
+      <textarea id="explain-message" class="text-area" placeholder=""></textarea>
+
+
+    </div>
+
+    <canvas id="canvas"></canvas>
+    <button type="button" class="collapsible"><span id='arrow' class="fas fa-caret-right" aria-hidden="true"></span>
+      <span style="font-size: larger;">Read More</span> </button>
+    <div class="content">
+      <ol id="ordered-list">
+        <li class="section"><span>Computer Networks: A Systems Approach: </span><a
+            href="https://book.systemsapproach.org/ " target="_blank"
+            rel="noopener noreferrer">https://book.systemsapproach.org/</a><br><br></li>
+        <li class="section"><span>Encoding Chapter 2.2: </span><a
+            href="https://book.systemsapproach.org/direct/encoding.html" target="_blank"
+            rel="noopener noreferrer">https://book.systemsapproach.org/direct/encoding.html</a><br><br></li>
+        <li class="section"><span>Non-return-to-zero(NRZ) : </span><a
+            href="https://en.wikipedia.org/wiki/Non-return-to-zero" target="_blank"
+            rel="noopener noreferrer">https://en.wikipedia.org/wiki/Non-return-to-zero</a><br><br></li>
+        <li class="section"><span>Bipolar encoding : </span><a href="https://en.wikipedia.org/wiki/Bipolar_encoding"
+            target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Bipolar_encoding</a><br><br></li>
+        <li class="section"><span>Differential Manchester encoding : </span><a
+            href="https://en.wikipedia.org/wiki/Differential_Manchester_encoding" target="_blank"
+            rel="noopener noreferrer">https://en.wikipedia.org/wiki/Differential_Manchester_encoding</a><br><br></li>
+        <li class="section"><span>Manchester code : </span><a href="https://en.wikipedia.org/wiki/Manchester_code"
+            target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Manchester_code</a><br><br></li>
+          <li class="section"><span>4B5B Encoding : </span><a href="https://en.wikipedia.org/wiki/4B5B_encoding"
+            target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/4B5B_encoding</a><br><br></li>
+          </ol>
+    </div>
+    <div class="footer"><span><a style="color: white;" href="https://github.com/davyrob-clg/digital-signal-visualizer"
+          target="_blank" rel="noopener noreferrer">Github</a></span></div>
+
+
+        </body>
+
+
+
+</html>
+
+
