@@ -132,7 +132,7 @@ addEventListener('resize', () => {
 function launchASK() {
   // Change the current page URL
    console.log("ASK clicked")
-   alert("This will open a new page for ASK modulation simulation. Please allow pop-ups for this site if you don't see the new page.")
+   //alert("This will open a new page for ASK modulation simulation. Please allow pop-ups for this site if you don't see the new page.")
    window.open("/src/ask.html", '_self').focus();
   
   //window.location.assign("/src/ask.html");
