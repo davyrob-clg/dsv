@@ -21,7 +21,7 @@ function NRZL(c, BINARY, HEIGHT) {
   c.lineWidth = 2.5;
   c.setLineDash([0, 0]);
   c.strokeStyle = "red";
-  startPoint = BINARY.charAt(0) == 1 ? 50 : -50;
+  let startPoint = BINARY.charAt(0) == 1 ? 50 : -50;
   c.moveTo(50, HEIGHT / 2 + startPoint);
   for (let i = 50, j = 0; j < BINARY.length; i += 50, j++) {
     if (BINARY.charAt(j) == 1) {
